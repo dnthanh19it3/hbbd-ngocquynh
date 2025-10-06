@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Happy Birthday Ngọc Quỳnh 🎂</title>
+    <link rel="shortcut icon" href="./icon.jpg" type="image/x-icon" />
+    <link rel="stylesheet" href="main.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Dancing+Script&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Canvas phủ toàn màn hình */
+      #confetti-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 100;
+      }
+
+      /* Overlay khi chưa click */
+      #start-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.8);
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-family: "Dancing Script", cursive;
+        z-index: 999;
+      }
+
+      #start-btn {
+        font-size: 1.8rem;
+        background: #4db6ac;
+        border: none;
+        padding: 1rem 2.5rem;
+        border-radius: 2rem;
+        color: white;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      #start-btn:hover {
+        background: #00897b;
+        transform: scale(1.05);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="drag-container">
+      <div id="spin-container">
+        <img src="./images/r1.jpg" alt="" />
+        <img src="./images/r2.jpg" alt="" />
+        <img src="./images/r3.jpg" alt="" />
+        <img src="./images/r4.jpg" alt="" />
+        <img src="./images/r1.jpg" alt="" />
+        <img src="./images/r6.jpg" alt="" />
+        <img src="./images/r2.jpg" alt="" />
+        <img src="./images/r5.jpg" alt="" />
+         
+        <p>Happy Birthday Quỳnh 💙</p>
+      </div>
+      <div id="ground"></div>
+    </div>
+
+    <div id="music-container"></div>
+
+    <!-- Overlay start -->
+    <div id="start-overlay">
+      <h2 style="margin-bottom: 1rem;">🎂 Happy Birthday Ngọc Quỳnh 🎂</h2>
+      <button id="start-btn">Bắt đầu thôi 🥳 </button>
+    </div>
+
+    <!-- Audio -->
+    <audio id="myAudio">
+      <source src="music/thousandyear.m4a" type="audio/mpeg" />
+    </audio>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <script src="main.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        console.log("[DBG] DOMContentLoaded");
+
+        const audio = document.getElementById("myAudio");
+
+        // ensure canvas exists (create if missing)
+        let canvas = document.getElementById("confetti-canvas");
+        if (!canvas) {
+          canvas = document.createElement("canvas");
+          canvas.id = "confetti-canvas";
+          document.body.appendChild(canvas);
+          // styles in JS to be robust
+          Object.assign(canvas.style, {
+            position: "fixed",
+            top: "0",
+            left: "0",
+            width: "100%",
+            height: "100%",
+            pointerEvents: "none",
+            zIndex: "100",
+          });
+          console.log("[DBG] Created confetti canvas dynamically");
+        }
+
+        const ctx =
+          canvas && canvas.getContext ? canvas.getContext("2d") : null;
+        if (!ctx) {
+          console.error(
+            "[ERR] Canvas 2D context not available. Confetti will not run."
+          );
+          return;
+        }
+
+        function resize() {
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener("resize", resize);
+
+        function random(min, max) {
+          return Math.random() * (max - min) + min;
+        }
+
+        function Confetti() {
+          this.x = random(0, canvas.width);
+          this.y = random(-canvas.height, 0);
+          this.size = random(5, 10);
+          this.color = `hsl(${random(0, 360)}, 100%, 60%)`;
+          this.vx = random(-2, 2);
+          this.vy = random(2, 5);
+          this.rotation = random(0, Math.PI * 2);
+          this.rotationSpeed = random(-0.05, 0.05);
+        }
+
+        Confetti.prototype.draw = function () {
+          ctx.save();
+          ctx.translate(this.x, this.y);
+          ctx.rotate(this.rotation);
+          ctx.fillStyle = this.color;
+          ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+          ctx.restore();
+        };
+
+        Confetti.prototype.update = function () {
+          this.x += this.vx;
+          this.y += this.vy;
+          this.rotation += this.rotationSpeed;
+          if (this.y > canvas.height) {
+            this.y = random(-100, 0);
+            this.x = random(0, canvas.width);
+          }
+        };
+
+        let confettis = [];
+        let animId = null;
+        function startConfettiOnce() {
+          if (animId) return; // already running
+          for (let i = 0; i < 150; i++) confettis.push(new Confetti());
+          (function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            confettis.forEach((c) => {
+              c.update();
+              c.draw();
+            });
+            animId = requestAnimationFrame(animate);
+          })();
+          console.log("[DBG] Confetti started");
+        }
+
+        // Start handler
+        const startBtn = document.getElementById("start-btn");
+        function startHandler() {
+          console.log("[DBG] startHandler fired");
+          try {
+            if (audio) {
+              audio.muted = false;
+              const p = audio.play();
+              if (p && p.catch)
+                p.catch((e) => console.warn("[WARN] audio.play() failed:", e));
+            } else {
+              console.warn("[WARN] myAudio element not found");
+            }
+          } catch (e) {
+            console.warn("[WARN] error while playing audio:", e);
+          }
+
+          const overlay = document.getElementById("start-overlay");
+          if (overlay) overlay.style.display = "none";
+          startConfettiOnce();
+
+          if (startBtn) startBtn.removeEventListener("click", startHandler);
+          document.removeEventListener("click", fallbackDocClick);
+        }
+
+        // Fallback if #start-btn missing: any first click starts
+        function fallbackDocClick(e) {
+          // ignore clicks on links or inputs if you want; for now just start
+          startHandler();
+        }
+
+        if (startBtn) {
+          startBtn.addEventListener("click", startHandler);
+          console.log("[DBG] start-btn listener attached");
+        } else {
+          document.addEventListener("click", fallbackDocClick);
+          console.log(
+            "[DBG] start-btn not found -> fallback listener attached to document"
+          );
+        }
+      });
+    </script>
+  </body>
+</html>
